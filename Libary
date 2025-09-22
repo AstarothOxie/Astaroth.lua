@@ -1,0 +1,60 @@
+-- AstarothUI.lua
+-- Simple UI Library by Kamu 😎
+
+local AstarothUI = {}
+
+-- Service
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Fungsi utama: CreateWindow
+function AstarothUI:CreateWindow(title)
+    local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+    ScreenGui.Name = "AstarothUI"
+
+    local Main = Instance.new("Frame", ScreenGui)
+    Main.Size = UDim2.new(0, 400, 0, 250)
+    Main.Position = UDim2.new(0.5, -200, 0.5, -125)
+    Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    Main.Active = true
+    Main.Draggable = true
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+
+    local Title = Instance.new("TextLabel", Main)
+    Title.Size = UDim2.new(1, 0, 0, 40)
+    Title.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    Title.Text = title or "Astaroth UI"
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.Font = Enum.Font.SourceSansBold
+    Title.TextSize = 20
+    Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 12)
+
+    -- tempat content
+    local Content = Instance.new("Frame", Main)
+    Content.Size = UDim2.new(1, -20, 1, -60)
+    Content.Position = UDim2.new(0, 10, 0, 50)
+    Content.BackgroundTransparency = 1
+
+    -- sistem nambah tombol
+    function Content:CreateButton(text, callback)
+        local Btn = Instance.new("TextButton", Content)
+        Btn.Size = UDim2.new(0, 140, 0, 36)
+        Btn.Position = UDim2.new(0, 7, 0, (#Content:GetChildren()-1)*42)
+        Btn.Text = text or "Button"
+        Btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+        Btn.TextColor3 = Color3.new(1,1,1)
+        Btn.Font = Enum.Font.SourceSansBold
+        Btn.TextSize = 16
+        Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+
+        Btn.MouseButton1Click:Connect(function()
+            if callback then callback() end
+        end)
+
+        return Btn
+    end
+
+    return Content
+end
+
+return AstarothUI
