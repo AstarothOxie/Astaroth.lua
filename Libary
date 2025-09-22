@@ -1,33 +1,128 @@
--- isi Mercury UI original disini (copas semua)
+-- AstarothUI v1 (Basic Library)
+-- Author: Kelvin
 
--- lalu di paling bawah kita tambahin wrapper
-local AstarothLib = {}
+local Astaroth = {}
+Astaroth.__index = Astaroth
 
-function AstarothLib:Create(options)
-    return self:create(options) -- dari Mercury
+-- Create Window
+function Astaroth:CreateWindow(title)
+    local Player = game.Players.LocalPlayer
+    local ScreenGui = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
+    ScreenGui.Name = "AstarothGui"
+    ScreenGui.ResetOnSpawn = false
+
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Size = UDim2.new(0, 500, 0, 300)
+    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+
+    local Title = Instance.new("TextLabel", MainFrame)
+    Title.Text = title or "Astaroth Project"
+    Title.Size = UDim2.new(1, 0, 0, 40)
+    Title.BackgroundTransparency = 1
+    Title.Font = Enum.Font.SourceSansBold
+    Title.TextSize = 20
+    Title.TextColor3 = Color3.new(1,1,1)
+
+    local WindowObj = setmetatable({}, Astaroth)
+    WindowObj.Gui = ScreenGui
+    WindowObj.MainFrame = MainFrame
+    WindowObj.Tabs = {}
+    return WindowObj
 end
 
-function AstarothLib:CreateTab(window, options)
-    local tab = window:tab(options)
+-- Create Tab
+function Astaroth:CreateTab(name)
+    local TabFrame = Instance.new("Frame", self.MainFrame)
+    TabFrame.Size = UDim2.new(1, 0, 1, -40)
+    TabFrame.Position = UDim2.new(0, 0, 0, 40)
+    TabFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    TabFrame.Visible = #self.Tabs == 0 -- tab pertama langsung aktif
 
-    -- wrapper gampang
-    function tab:CreateButton(opt)
-        return tab:Button({
-            Name = opt.Name,
-            Description = opt.Description or "",
-            Callback = opt.Callback
-        })
+    local Button = Instance.new("TextButton", self.MainFrame)
+    Button.Text = name
+    Button.Size = UDim2.new(0, 100, 0, 30)
+    Button.Position = UDim2.new(0, (#self.Tabs) * 105, 0, 5)
+    Button.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    Button.TextColor3 = Color3.new(1,1,1)
+
+    local TabObj = {}
+    TabObj.Frame = TabFrame
+    TabObj.Button = Button
+
+    Button.MouseButton1Click:Connect(function()
+        for _, tab in ipairs(self.Tabs) do
+            tab.Frame.Visible = false
+        end
+        TabFrame.Visible = true
+    end)
+
+    -- BUTTON
+    function TabObj:CreateButton(text, callback)
+        local Btn = Instance.new("TextButton", TabFrame)
+        Btn.Text = text
+        Btn.Size = UDim2.new(0, 140, 0, 36)
+        Btn.Position = UDim2.new(0, 7, 0, (#TabFrame:GetChildren()-1)*40)
+        Btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+        Btn.TextColor3 = Color3.new(1,1,1)
+
+        Btn.MouseButton1Click:Connect(function()
+            if callback then callback() end
+        end)
+        return Btn
     end
 
-    function tab:CreateToggle(opt)
-        return tab:Toggle({
-            Name = opt.Name,
-            StartingState = opt.StartingState or false,
-            Callback = opt.Callback
-        })
+    -- TOGGLE
+    function TabObj:CreateToggle(text, default, callback)
+        local Toggle = Instance.new("TextButton", TabFrame)
+        Toggle.Size = UDim2.new(0, 160, 0, 36)
+        Toggle.Position = UDim2.new(0, 7, 0, (#TabFrame:GetChildren()-1)*40)
+        Toggle.TextColor3 = Color3.new(1,1,1)
+        Toggle.BackgroundColor3 = Color3.fromRGB(80,80,80)
+
+        local state = default or false
+        Toggle.Text = text.." : "..(state and "ON" or "OFF")
+
+        Toggle.MouseButton1Click:Connect(function()
+            state = not state
+            Toggle.Text = text.." : "..(state and "ON" or "OFF")
+            if callback then callback(state) end
+        end)
+        return Toggle
     end
 
-    return tab
+    -- SLIDER
+    function TabObj:CreateSlider(text, min, max, default, callback)
+        local SliderFrame = Instance.new("Frame", TabFrame)
+        SliderFrame.Size = UDim2.new(0, 200, 0, 36)
+        SliderFrame.Position = UDim2.new(0, 7, 0, (#TabFrame:GetChildren()-1)*40)
+        SliderFrame.BackgroundColor3 = Color3.fromRGB(60,60,60)
+
+        local Label = Instance.new("TextLabel", SliderFrame)
+        Label.Size = UDim2.new(1, 0, 0.5, 0)
+        Label.BackgroundTransparency = 1
+        Label.TextColor3 = Color3.new(1,1,1)
+        Label.Text = text..": "..default
+
+        local SliderButton = Instance.new("TextButton", SliderFrame)
+        SliderButton.Size = UDim2.new(1, 0, 0.5, 0)
+        SliderButton.Position = UDim2.new(0, 0, 0.5, 0)
+        SliderButton.Text = ""
+        SliderButton.BackgroundColor3 = Color3.fromRGB(80,80,80)
+
+        local value = default or min
+        SliderButton.MouseButton1Click:Connect(function()
+            value = (value >= max) and min or value + 1
+            Label.Text = text..": "..value
+            if callback then callback(value) end
+        end)
+        return SliderFrame
+    end
+
+    table.insert(self.Tabs, TabObj)
+    return TabObj
 end
 
-return AstarothLib
+return Astaroth
